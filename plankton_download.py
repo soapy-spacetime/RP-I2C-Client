@@ -4,11 +4,14 @@ import matplotlib.pyplot as plt
 import os
 import pickle
 import time
-os.environ["BLINKA_FT232H"] = "1" #set environment variable
+
+i2c_clock_speed = 200e3
 
 try:
-    import board
-    import busio
+    os.environ["BLINKA_FT232H"] = "1" #set environment variable
+    import board # pip install board
+    import busio # pip install wheel, adafruit-circuitpython-busdevice
+        # it may be necessary to use Zadig to force the device to use a libusb driver
 except RuntimeError as e:
     print("Got Exception:\n>>\t%s" % e)
     print("Make sure the USB-I2C cable is plugged in...")
@@ -52,7 +55,7 @@ datapoint_fmt = "<hhhhhhhhh"
 datapoint_size = 18 # bytes
 eeprom_size = 1 << 18
 
-i2c = busio.I2C(board.SCL, board.SDA, 200e3)
+i2c = busio.I2C(board.SCL, board.SDA, i2c_clock_speed)
 print("Testing bus...")
 while not i2c.try_lock():
     time.sleep(1)
@@ -195,25 +198,25 @@ while read_p <= len(data_ba)-datapoint_size:
 
         if dp['X_mag_g'] != 0:
             dp['X_dir'] = (
-                datapoint[0]/dp['X_mag_g'],
-                datapoint[1]/dp['X_mag_g'],
-                datapoint[2]/dp['X_mag_g'])
+                dp['X_x_g']/dp['X_mag_g'],
+                dp['X_y_g']/dp['X_mag_g'],
+                dp['X_z_g']/dp['X_mag_g'])
         else:
             dp['X_dir'] = (0, 0, 0)
 
         if dp['G_mag_dps'] != 0:
             dp['G_dir'] = (
-                datapoint[3]/dp['G_mag_dps'],
-                datapoint[4]/dp['G_mag_dps'],
-                datapoint[5]/dp['G_mag_dps'])
+                dp['G_x_dps']/dp['G_mag_dps'],
+                dp['G_y_dps']/dp['G_mag_dps'],
+                dp['G_z_dps']/dp['G_mag_dps'])
         else:
             dp['G_dir'] = (0, 0, 0)
 
         if dp['M_mag_Ga'] != 0:
             dp['M_dir'] = (
-                datapoint[6]/dp['M_mag_Ga'],
-                datapoint[7]/dp['M_mag_Ga'],
-                datapoint[8]/dp['M_mag_Ga'])
+                dp['M_x_Ga']/dp['M_mag_Ga'],
+                dp['M_y_Ga']/dp['M_mag_Ga'],
+                dp['M_z_Ga']/dp['M_mag_Ga'])
         else:
             dp['M_dir'] = (0, 0, 0)
 
